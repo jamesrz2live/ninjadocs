@@ -1,0 +1,32 @@
+module NinjaDocs
+  class RakeHelper
+    def self.scriptDir 
+      File.expand_path File.dirname(__FILE__)
+    end
+
+    def self.doit command
+      $stdout.puts "#{command}"
+      system "#{command}"
+    end
+  end
+end
+
+desc 'Removes generated documents'
+task :clean do
+  $stdout.puts "Cleaning..."
+  NinjaDocs::RakeHelper::doit "find '#{NinjaDocs::RakeHelper::scriptDir}' -iwholename '**/*.html' -type f -delete"
+  NinjaDocs::RakeHelper::doit "rm -rf '#{NinjaDocs::RakeHelper::scriptDir}/.ninjadocs/' '#{NinjaDocs::RakeHelper::scriptDir}/.sass_cache/'"
+end
+
+task :clean_sass do
+  NinjaDocs::RakeHelper::doit "rm -rf #{NinjaDocs::RakeHelper.scriptDir}/sass_cache/"
+end
+
+task :run => [:clean] do
+  $stdout.puts "Ninjadocs, activate!"
+  NinjaDocs::RakeHelper::doit "ruby '#{NinjaDocs::RakeHelper::scriptDir}/ninjadocs.rb' -v #{NinjaDocs::RakeHelper::scriptDir}"
+end
+
+task :default => [:run] do
+  Rake::Task[:clean_sass].invoke
+end

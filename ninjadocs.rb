@@ -117,11 +117,11 @@ module NinjaDocs
       
       fout = File.expand_path(_relativePath(srcFile, @searchRoot)).gsub(".md", ".html")
     
-      html = Kramdown::Document.new(IO.read(srcFile)).to_html()
+      html = Kramdown::Converter.new(IO.read(srcFile)).to_html
       File.open(fout, 'w') { |fstream| fstream.write(html) }
 
       $stdout.puts "#{green('✔')} #{srcFile}" if @verbose
-      @docs << { :href => fout, :name => File.basename(fout, '.*').gsub("_", " ") }
+      @docs << { :href => fout, :name => File.basename(fout, '.*').gsub("_", " "), :toc => html.generate_toc_tree() }
     rescue => exception
       $stdout.puts "#{red('✘')} #{srcFile}"
       $stderr.puts "'#{srcFile}' => #{exception.message}"

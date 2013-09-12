@@ -60,7 +60,9 @@
       .colright
         .col1wrap
           .col1
-            %p Hello World
+            - @docs.each do |d|
+              %h1 Table of Contents
+              %p- d[:toc]
             
         .col2
           %ul
