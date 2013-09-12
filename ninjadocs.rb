@@ -58,7 +58,7 @@ module NinjaDocs
       { :root => Dir.getwd, :html => Dir.getwd, :v => false }.merge!(opts)
       @searchRoot = File.expand_path opts[:root]
       @htmlRoot = File.expand_path opts[:html]
-      @ninjaRoot = File.join @htmlRoot, '.ninjadocs/'
+      @ninjaRoot = File.expand_path "#{@htmlRoot}/.ninjadocs/"
       @docs = []
       @errors = []
       @indexFilepath = File.join @htmlRoot, 'docs.html'
@@ -68,7 +68,7 @@ module NinjaDocs
 
     def generate
       if @verbose
-        $stdout.puts "#{blue('☯ NinjaDocs')}"
+        $stdout.puts '☯ NinjaDocs'
         $stdout.puts "(working in #{@searchRoot})"
       end
       
@@ -77,10 +77,10 @@ module NinjaDocs
       _ninjitsu
 
       if @errors.length > 0
-        $stdout.puts red('☠ NinjaDocs ლ(ಠ益ಠლ)')
+        $stdout.puts '☠ NinjaDocs ლ(ಠ益ಠლ)'
         abort
       else
-        $stdout.puts green('✌ NinjaDocs') if @verbose
+        $stdout.puts '✌ NinjaDocs' if @verbose
       end
     end
 
@@ -96,11 +96,11 @@ module NinjaDocs
     end
 
     def _globSrcFiles
-      files = []
-      Dir.chdir(@searchRoot) { 
-        files = Dir.glob("**/*").collect { |f| File.expand_path f }
+      Dir.glob("#{@searchRoot}/**/*").select { |f| 
+        f[/.*(#{FILE_EXTENSIONS.join('|')})/, 1] 
+      }.collect { |f| 
+        File.expand_path f 
       }
-      return files
     end
 
     def _relativePath path, root
@@ -109,33 +109,38 @@ module NinjaDocs
 
     def _ninjitsu
       _globSrcFiles().each { |f| _makeNinjaDoc f }
-      _makeIndexFile
+      @docs.each() { |d| _writeDoc d }
     end
 
     def _makeNinjaDoc srcFile
-      return unless srcFile[/.*(#{FILE_EXTENSIONS.join('|')})/, 1]
-      
-      fout = File.expand_path(_relativePath(srcFile, @searchRoot)).gsub(".md", ".html")
-    
-      src = IO.read(srcFile)
-      File.open(fout, 'w') { |fstream| fstream.write(Kramdown::Document.new(src).to_html) }
-
-      $stdout.puts "#{green('✔')} #{srcFile}" if @verbose
-      @docs << { :href => fout, :name => File.basename(fout, '.*').gsub("_", " ") }
+      fout = "#{_relativePath(srcFile, @searchRoot)}".gsub('.md', '.html')
+      if fout.include? 'index.html'
+        fout = "#{@htmlRoot}/index.html"
+      else
+        fout = "#{@ninjaRoot}/#{fout}"
+      end
+      @docs << { :href => fout, :name => File.basename(fout, '.*').gsub("_", " "), :src => srcFile }
     rescue => exception
-      $stdout.puts "#{red('✘')} #{srcFile}"
+      $stdout.puts "#{red('✘')} #{_relativePath(srcFile, @searchRoot)}"
       $stderr.puts "'#{srcFile}' => #{exception.message}"
       @errors << exception
     end
 
-    def _makeIndexFile
+    def _writeDoc doc
+      if doc[:src]
+        @body = Kramdown::Document.new(IO.read(doc[:src])).to_html
+      else
+        @body = Kramdown::Document.new(doc[:body]).to_html
+      end
+
       t = File.expand_path File.join(File.dirname(__FILE__), 'templates', 'docs.haml')
-      html = Haml::Engine.new(IO.read(t)).render(self)
-      File.open(@indexFilepath, 'w') { |fstream| fstream.write html }
-      $stdout.puts "#{green('★')} #{@indexFilepath}" if @verbose
+      fout = File.expand_path doc[:href]
+      File.open(fout, 'w') { |fstream| fstream.write Haml::Engine.new(IO.read(t)).render(self) }
+      srcRelativePath = _relativePath(doc[:src], @searchRoot)
+      $stdout.puts "#{green('✔')} #{srcRelativePath}"
     rescue => exception
-      $stderr.puts "#{red('✘')} #{@indexFilepath}"
-      $stderr.puts "Render '#{File.basename @indexFilepath}' => exception: #{exception.message}"
+      $stderr.puts "#{red('✘')} #{srcRelativePath}"
+      $stderr.puts "Render '#{srcRelativePath}' => exception: #{exception.message}"
       @errors << exception
     end
   end
