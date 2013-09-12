@@ -2,7 +2,8 @@
 
 This is a test.
 
-{#toc}
+* This will be replaced by the TOC
+{:toc}
 
 ## header 2
 

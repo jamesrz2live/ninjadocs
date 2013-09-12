@@ -6,7 +6,7 @@ module NinjaDocs
 
     def self.doit command
       $stdout.puts "#{command}"
-      system "#{command}"
+      system("#{command} || exit 1")
     end
   end
 end
