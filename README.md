@@ -1,0 +1,4 @@
+ninjadocs
+=========
+
+Generates HTMLs
