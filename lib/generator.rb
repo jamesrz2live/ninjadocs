@@ -7,16 +7,6 @@ require 'haml'
 
 module NinjaDocs
 
-=begin
-
-# NinjaDocs::Generator
-
-`Generator` creates HTML files by scanning the specified path for source files
-and running them through Kramdown. The pages it generates are created by
-rendering templates using Haml.
-
-=end
-
   class Generator
     attr_accessor :events
     attr_reader :errors
@@ -38,7 +28,7 @@ rendering templates using Haml.
       @searchRoot = Dir.getwd
       @searchRoot = File.expand_path opts[:searchRoot] if opts[:searchRoot]
       @htmlRoot = Dir.getwd
-      @htmlRoot = opts[:htmlRoot] if opts[:htmlRoot]
+      @htmlRoot = File.expand_path opts[:htmlRoot] if opts[:htmlRoot]
       @events = Events.new
       @ninjaRoot = File.expand_path "#{@htmlRoot}/.ninjadocs/"
       @indexFilepath = "#{@htmlRoot}/docs.html"
@@ -82,6 +72,7 @@ rendering templates using Haml.
     def _ninjutsu
       _globSrcFiles().each { |f| _makeNinjaDoc f }
       @docs.each() { |d| _writeDoc d }
+      _copyJavaScript
     end
 
     def _makeNinjaDoc srcFile
@@ -93,27 +84,35 @@ rendering templates using Haml.
         FileUtils.mkdir_p File.dirname(fout)
       end
       @docs << { :href => fout, :name => File.basename(fout, '.*').gsub("_", " "), :src => srcFile }
-    rescue => exception
-      @events.emit "failure", :srcFile => srcFile, :error => exception.message, :backtrace => exception.backtrace
-      @errors << exception
+    rescue Exception => e
+      @events.emit "failure", :srcFile => srcFile, :error => e.message, :backtrace => e.backtrace
+      @errors << e
+    end
+
+    def _setTemplateVars doc
+      src = doc[:src] ? IO.read(doc[:src]) : doc[:body]
+      @body = Kramdown::Document.new(src).to_html
+      @jsPath = "#{@ninjaRoot}/js"
     end
 
     def _writeDoc doc
-      if doc[:src]
-        @body = Kramdown::Document.new(IO.read(doc[:src])).to_html
-      else
-        @body = Kramdown::Document.new(doc[:body]).to_html
-      end
-
+      _setTemplateVars doc
+      
       t = File.expand_path File.join(File.dirname(__FILE__), '..', 'views', 'docs.haml')
       fout = File.expand_path doc[:href]
       File.open(fout, 'w') { |fstream| fstream.write Haml::Engine.new(IO.read(t)).render(self) }
-      srcRelativePath = _relativePath(doc[:src], @searchRoot)
       
       @events.emit "success", :srcFile => doc[:src]
-    rescue => exception
-      @events.emit "failure", :srcFile => doc[:src], :error => exception.message, :backtrace => exception.backtrace
-      @errors << exception
+    rescue Exception => e
+      @events.emit "failure", :srcFile => doc[:src], :error => e.message, :backtrace => e.backtrace
+      @errors << e
+    end
+
+    def _copyJavaScript
+      FileUtils.mkdir_p "#{@ninjaRoot}/js"
+      FileUtils.cp_r("#{File.dirname(__FILE__)}/../js/", "#{@ninjaRoot}")
+    rescue Exception => e
+      @errors << e
     end
   
   end

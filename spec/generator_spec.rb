@@ -70,12 +70,20 @@ describe 'NinjaDocs::Generator#generate' do
 
   it "should create an html file for each source file" do
     srcFiles = Dir.glob("#{helper.searchRoot}/**").map {|f| File.basename(f)}
-    htmlFiles = Dir.glob("#{helper.htmlRoot}/.ninjadocs/**").map {|f| File.basename(f) }
+    htmlFiles = Dir.glob("#{helper.htmlRoot}/.ninjadocs/**").select{|f| not File.directory?(f)}.map {|f| File.basename(f) }
     htmlFiles << "index.html" if File.exists?("#{helper.htmlRoot}/index.html")
     srcFiles.each() { |s| 
       htmlFile = s.gsub(File.extname(s), ".html")
       htmlFiles.include?(htmlFile).should be_true 
     }
     srcFiles.size.should == htmlFiles.size
+  end
+
+  it "should create a js/ subdirectory in htmlRoot/.ninjadocs" do
+    File.exists?("#{helper.htmlRoot}/.ninjadocs/js/").should be_true
+  end
+
+  it "should deploy search.js to the js/ subdirectory" do
+    File.exists?("#{helper.htmlRoot}/.ninjadocs/js/search.js").should be_true
   end
 end
