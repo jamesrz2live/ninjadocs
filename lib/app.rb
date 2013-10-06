@@ -29,7 +29,10 @@ module NinjaDocs
       end
       
       args = args.split(' ') if args.class == String
-      @cli = p.parse(args)
+      
+      @cli = Trollop::with_standard_exception_handling p do
+         p.parse(args)
+      end
 
       @cli[:in] = @cli[:in].flatten().select() { |f| File.directory?(f) }
       Trollop::die "No input paths were specified or valid." if @cli[:in].empty?
