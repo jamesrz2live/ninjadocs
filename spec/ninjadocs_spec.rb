@@ -3,27 +3,29 @@ require "#{File.dirname(__FILE__)}/../lib/generator"
 require "#{File.dirname(__FILE__)}/../lib/events"
 require 'tmpdir'
 
-class Helper
-  attr_reader :tmpDir, :searchRoot
+module NinjaDocsSpec
+  class Helper
+    attr_reader :tmpDir, :searchRoot
 
-  def initialize
-    # @tmpDir = Dir.mktmpdir
-    @tmpDir = "/tmp/ninjadocs"
-    @searchRoot = "#{File.dirname(__FILE__)}/../docs"
-  end
+    def initialize
+      # @tmpDir = Dir.mktmpdir
+      @tmpDir = "/tmp/ninjadocs"
+      @searchRoot = "#{File.dirname(__FILE__)}/../docs"
+    end
 
-  def clean
-    system "rm -rf #{@tmpDir} && mkdir -p #{@tmpDir}"
-  end
+    def clean
+      system "rm -rf #{@tmpDir} && mkdir -p #{@tmpDir}"
+    end
 
-  def deployNinjaDocs
-    system "cp -R #{File.dirname(__FILE__)}/../ #{@tmpDir}"
+    def deployNinjaDocs
+      system "cp -R #{File.dirname(__FILE__)}/../ #{@tmpDir}"
+    end
   end
 end
 
 describe "NinjaDocs::App" do
   before :each do
-    @helper = Helper.new
+    @helper = NinjaDocsSpec::Helper.new
     @args = "--in #{@helper.searchRoot} --out #{@helper.tmpDir} -q"
     @app = NinjaDocs::App.new(@args)
   end
@@ -60,7 +62,7 @@ end
 
 describe "Using ninjadocs" do
   before :each do
-    @helper = Helper.new
+    @helper = NinjaDocsSpec::Helper.new
     @helper.clean
     @helper.deployNinjaDocs
     system "ruby #{@helper.tmpDir}/ninjadocs.rb -q --in #{@helper.tmpDir} --out #{@helper.tmpDir}" 

@@ -1,18 +1,20 @@
 require "#{File.dirname(__FILE__)}/../lib/generator"
 require 'tmpdir'
 
-class Helper
-  attr_reader :searchRoot, :htmlRoot
+module NinjaDocsGeneratorSpec
+  class Helper
+    attr_reader :searchRoot, :htmlRoot
 
-  def initialize
-    @searchRoot = "#{File.dirname(__FILE__)}/../docs"
-    # @htmlRoot = Dir.mktmpdir
-    @htmlRoot = "/tmp/ninjadocs"
-  end
+    def initialize
+      @searchRoot = "#{File.dirname(__FILE__)}/../docs"
+      # @htmlRoot = Dir.mktmpdir
+      @htmlRoot = "/tmp/ninjadocs"
+    end
 
-  def clean
-    system "rm -fr #{@htmlRoot}/ #{@searchRoot}/docs.html"
-    system "mkdir -p #{@htmlRoot}"
+    def clean
+      system "rm -fr #{@htmlRoot}/ #{@searchRoot}/index.html"
+      system "mkdir -p #{@htmlRoot}"
+    end
   end
 end
 
@@ -22,8 +24,7 @@ describe 'NinjaDocs::Generator' do
 end
 
 describe 'NinjaDocs::Generator#generate' do
-  
-  let(:helper) { Helper.new() }
+  let(:helper) { NinjaDocsGeneratorSpec::Helper.new() }
 
   let(:nd) { 
     NinjaDocs::Generator.new({
@@ -46,6 +47,10 @@ describe 'NinjaDocs::Generator#generate' do
     nd.generate
   end
 
+  after :each do
+    helper.clean
+  end
+
   it "should not fail" do
     @errorCount.should == 0
   end
@@ -60,7 +65,7 @@ describe 'NinjaDocs::Generator#generate' do
 
   it "the ONLY html file in the htmlRoot directory should be 'index.html'" do
     htmlFiles = Dir.glob("#{helper.htmlRoot}/**").select { |f| File.extname(f) =~ /htm/ }
-    htmlFiles.size.should == 1
+    htmlFiles.size().should == 1
     File.basename(htmlFiles[0]).should match(/^index/)
   end
 
@@ -74,5 +79,4 @@ describe 'NinjaDocs::Generator#generate' do
     }
     srcFiles.size.should == htmlFiles.size
   end
-  
 end
