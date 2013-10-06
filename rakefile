@@ -23,6 +23,7 @@ end
 
 task :run => [:clean] do
   NinjaDocs::RakeHelper::doit "ruby '#{NinjaDocs::RakeHelper::scriptDir}/ninjadocs.rb' --in #{NinjaDocs::RakeHelper::scriptDir}/docs --out #{NinjaDocs::RakeHelper::scriptDir}/html"
+  NinjaDocs::RakeHelper::doit "open #{NinjaDocs::RakeHelper::scriptDir}/html/index.html"
 end
 
 task :default => [:run] do

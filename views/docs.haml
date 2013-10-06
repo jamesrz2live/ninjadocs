@@ -1,58 +1,58 @@
 !!! 5
 %html
   %head
-    %style{:type => 'text/css'}
-      :sass
-        $left_col_width: 10em
-        $padding: 1em
+    %srcipt{:type => 'text/javascript', :src => 'https://raw.github.com/olivernn/lunr.js/master/lunr.min.js'}
+    :sass
+      $left_col_width: 10em
+      $padding: 1em
 
-        $left_col_top_padding: $padding
-        $left_col_left_padding: $padding
-        $left_col_right_padding: $padding
+      $left_col_top_padding: $padding
+      $left_col_left_padding: $padding
+      $left_col_right_padding: $padding
 
-        $right_col_top_padding: $padding
-        $right_col_left_padding: $padding
-        $right_col_right_padding: $padding
+      $right_col_top_padding: $padding
+      $right_col_left_padding: $padding
+      $right_col_right_padding: $padding
 
-        #header
-          clear: both
+      #header
+        clear: both
+        float: left
+        width: 100%
+
+      .colmask
+        position: relative
+        clear: both
+        float: left
+        width: 100%
+        overflow: hidden
+
+      .leftmenu
+        .colright
           float: left
-          width: 100%
-
-        .colmask
+          width: 200%
           position: relative
-          clear: both
-          float: left
-          width: 100%
+          left: $left_col_width+$left_col_left_padding+$right_col_left_padding
+        .col1wrap
+          float: right
+          width: 50%
+          position: relative
+          right: $left_col_width+$left_col_right_padding+$right_col_right_padding
+          padding-bottom: 1em
+        .col1
+          margin: $right_col_top_padding $right_col_right_padding 0 $left_col_width+$left_col_left_padding+$left_col_right_padding+$right_col_left_padding
+          position: relative
+          right: 100%
           overflow: hidden
-
-        .leftmenu
-          .colright
-            float: left
-            width: 200%
-            position: relative
-            left: $left_col_width+$left_col_left_padding+$right_col_left_padding
-          .col1wrap
-            float: right
-            width: 50%
-            position: relative
-            right: $left_col_width+$left_col_right_padding+$right_col_right_padding
-            padding-bottom: 1em
-          .col1
-            margin: $right_col_top_padding $right_col_right_padding 0 $left_col_width+$left_col_left_padding+$left_col_right_padding+$right_col_left_padding
-            position: relative
-            right: 100%
-            overflow: hidden
-          .col2
-            float: left
-            width: $left_col_width
-            position: relative
-            right: $left_col_width+$left_col_left_padding
-
-        #footer
-          clear: both
+        .col2
           float: left
-          width: 100%
+          width: $left_col_width
+          position: relative
+          right: $left_col_width+$left_col_left_padding
+
+      #footer
+        clear: both
+        float: left
+        width: 100%
 
   %body
     #header
