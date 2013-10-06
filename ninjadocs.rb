@@ -2,4 +2,6 @@
 require "#{File.dirname(__FILE__)}/lib/generator"
 require "#{File.dirname(__FILE__)}/lib/app"
 
-NinjaDocs::App.new(ARGV).run
+if __FILE__ == $0
+  NinjaDocs::App.new(ARGV).run
+end

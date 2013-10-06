@@ -27,8 +27,8 @@ describe 'NinjaDocs::Generator#generate' do
 
   let(:nd) { 
     NinjaDocs::Generator.new({
-      :root => helper.searchRoot,
-      :html => helper.htmlRoot
+      :searchRoot => helper.searchRoot,
+      :htmlRoot => helper.htmlRoot
     });
   }
 
@@ -37,8 +37,12 @@ describe 'NinjaDocs::Generator#generate' do
     @errorCount = 0
     nd.events.on("failure") { |info| 
       @errorCount += 1 
-      $stderr.puts "#{info.inspect}"
+
+      $stderr.puts "#{info[:srcFile]}: #{info[:error]}"
+      $stderr.puts info[:backtrace]
+      $stderr.puts ""
     }
+
     nd.generate
   end
 
@@ -68,9 +72,7 @@ describe 'NinjaDocs::Generator#generate' do
       htmlFile = s.gsub(File.extname(s), ".html")
       htmlFiles.include?(htmlFile).should be_true 
     }
-
-    
     srcFiles.size.should == htmlFiles.size
   end
-
+  
 end

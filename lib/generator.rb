@@ -35,8 +35,10 @@ rendering templates using Haml.
     ]
 
     def initialize opts = {}
-      @searchRoot = opts[:root] || Dir.getwd
-      @htmlRoot = opts[:html] || Dir.getwd
+      @searchRoot = Dir.getwd
+      @searchRoot = File.expand_path opts[:searchRoot] if opts[:searchRoot]
+      @htmlRoot = Dir.getwd
+      @htmlRoot = opts[:htmlRoot] if opts[:htmlRoot]
       @events = Events.new
       @ninjaRoot = File.expand_path "#{@htmlRoot}/.ninjadocs/"
       @indexFilepath = "#{@htmlRoot}/docs.html"
@@ -45,13 +47,13 @@ rendering templates using Haml.
     end
 
     def generate
-      @events.emit "start", :searchRoot => @searchRoot
+      @events.emit "start", :searchRoot => @searchRoot, :htmlRoot => @htmlRoot
 
       _purify
       _prepare
       _ninjitsu
 
-      @events.emit "finish", :errors => @errors
+      @events.emit "finish", :errors => @errors, :srcFiles => _globSrcFiles(), :htmlFiles => @docs
     end
 
   private
@@ -88,9 +90,11 @@ rendering templates using Haml.
         fout = "#{@htmlRoot}/index.html"
       else
         fout = "#{@ninjaRoot}/#{fout}"
+        FileUtils.mkdir_p File.dirname(fout)
       end
       @docs << { :href => fout, :name => File.basename(fout, '.*').gsub("_", " "), :src => srcFile }
     rescue => exception
+      @events.emit "failure", :srcFile => srcFile, :error => exception.message, :backtrace => exception.backtrace
       @errors << exception
     end
 
@@ -108,7 +112,7 @@ rendering templates using Haml.
       
       @events.emit "success", :srcFile => doc[:src]
     rescue => exception
-      @events.emit "failure", :srcFile => doc[:src], :error => exception.message
+      @events.emit "failure", :srcFile => doc[:src], :error => exception.message, :backtrace => exception.backtrace
       @errors << exception
     end
   
