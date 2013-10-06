@@ -2,26 +2,29 @@ module NinjaDocs
   def self.path
     File.expand_path File.dirname(__FILE__)
   end
+end
 
+module Shinobi
   def self.doit command
     $stdout.puts "#{command}"
-    system("#{command} || exit 1")
+    result = system command
+    raise "Failed: #{command}" unless result
   end
 end
 
 desc 'Removes generated documents'
 task :clean do
-  NinjaDocs::doit "find '#{NinjaDocs::path}' -iwholename '**/*.html' -type f -delete"
-  NinjaDocs::doit "rm -rf '#{NinjaDocs::path}/.ninjadocs/' '#{NinjaDocs::path}/.sass_cache/'"
+  Shinobi::doit "find '#{NinjaDocs::path}' -iwholename '**/*.html' -type f -delete"
+  Shinobi::doit "rm -rf '#{NinjaDocs::path}/.ninjadocs/' '#{NinjaDocs::path}/.sass_cache/'"
 end
 
 task :clean_sass do
-  NinjaDocs::doit "rm -rf #{NinjaDocs::path}/sass_cache/"
+  Shinobi::doit "rm -rf #{NinjaDocs::path}/sass_cache/"
 end
 
 task :run => [:clean] do
-  NinjaDocs::doit "ruby #{NinjaDocs::path}/ninjadocs --in #{NinjaDocs::path}/docs --out #{NinjaDocs::path}/html"
-  NinjaDocs::doit "open #{NinjaDocs::path}/html/index.html"
+  Shinobi::doit "ruby #{NinjaDocs::path}/ninjadocs --in #{NinjaDocs::path}/docs --out #{NinjaDocs::path}/html"
+  Shinobi::doit "open #{NinjaDocs::path}/html/index.html"
 end
 
 task :default => [:run] do
