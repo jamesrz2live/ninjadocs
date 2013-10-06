@@ -35,3 +35,7 @@ And you get:
     1 directory, 3 files
 
 Enjoy!
+
+## tests
+
+To run the tests, simply run `rspec` from within the root directory.
