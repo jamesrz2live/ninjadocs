@@ -51,7 +51,7 @@ rendering templates using Haml.
 
       _purify
       _prepare
-      _ninjitsu
+      _ninjutsu
 
       @events.emit "finish", :errors => @errors, :srcFiles => _globSrcFiles(), :htmlFiles => @docs
     end
@@ -79,7 +79,7 @@ rendering templates using Haml.
       Pathname.new(path).relative_path_from(Pathname.new(root))
     end
 
-    def _ninjitsu
+    def _ninjutsu
       _globSrcFiles().each { |f| _makeNinjaDoc f }
       @docs.each() { |d| _writeDoc d }
     end
