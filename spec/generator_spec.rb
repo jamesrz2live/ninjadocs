@@ -7,8 +7,7 @@ module NinjaDocsGeneratorSpec
 
     def initialize
       @searchRoot = "#{File.dirname(__FILE__)}/../docs"
-      # @htmlRoot = Dir.mktmpdir
-      @htmlRoot = "/tmp/ninjadocs"
+      @htmlRoot = Dir.mktmpdir
     end
 
     def clean

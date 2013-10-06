@@ -1,4 +1,6 @@
 require "#{File.dirname(__FILE__)}/generator"
+require "#{File.dirname(__FILE__)}/events"
+require 'rubygems'
 require 'trollop'
 
 module NinjaDocs

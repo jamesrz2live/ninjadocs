@@ -1,5 +1,3 @@
-require "#{File.dirname(__FILE__)}/../lib/generator"
-require "#{File.dirname(__FILE__)}/../lib/events"
 require "#{File.dirname(__FILE__)}/../lib/app"
 require 'tmpdir'
 
@@ -8,8 +6,7 @@ module NinjaDocsSpec
     attr_reader :tmpDir, :searchRoot
 
     def initialize
-      # @tmpDir = Dir.mktmpdir
-      @tmpDir = "/tmp/ninjadocs"
+      @tmpDir = Dir.mktmpdir
       @searchRoot = "#{File.dirname(__FILE__)}/../docs"
     end
 
