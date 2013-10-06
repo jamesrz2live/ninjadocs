@@ -12,21 +12,24 @@ module Shinobi
   end
 end
 
-desc 'Removes generated documents'
-task :clean do
-  Shinobi::doit "find '#{NinjaDocs::path}' -iwholename '**/*.html' -type f -delete"
-  Shinobi::doit "rm -rf '#{NinjaDocs::path}/.ninjadocs/' '#{NinjaDocs::path}/.sass_cache/'"
-end
-
 task :clean_sass do
-  Shinobi::doit "rm -rf #{NinjaDocs::path}/sass_cache/"
+  Shinobi::doit "rm -rf #{NinjaDocs::path}/.sass-cache/"
 end
 
-task :run => [:clean] do
-  Shinobi::doit "ruby #{NinjaDocs::path}/ninjadocs --in #{NinjaDocs::path}/docs --out #{NinjaDocs::path}/html"
-  Shinobi::doit "open #{NinjaDocs::path}/html/index.html"
+desc 'Removes generated documents'
+task :clean => [:clean_sass] do
+  Shinobi::doit "find #{NinjaDocs::path} -iwholename **/*.html -type f -delete"
+  Shinobi::doit "rm -rf #{NinjaDocs::path}/html"
+  Shinobi::doit "rm -rf #{NinjaDocs::path}/.ninjadocs/"
 end
 
-task :default => [:run] do
+desc 'Cleans and runs tests'
+task :default => [:clean] do
+  Dir.chdir(NinjaDocs::path) { Shinobi::doit "rspec" }
   Rake::Task[:clean_sass].invoke
+end
+
+desc 'Learn how to use ninjadocs'
+task :help do
+  Shinobi::doit "ruby #{NinjaDocs::path}/ninjadocs -h"
 end

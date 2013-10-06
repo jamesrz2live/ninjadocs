@@ -1,6 +1,6 @@
-require "#{File.dirname(__FILE__)}/../ninjadocs"
 require "#{File.dirname(__FILE__)}/../lib/generator"
 require "#{File.dirname(__FILE__)}/../lib/events"
+require "#{File.dirname(__FILE__)}/../lib/app"
 require 'tmpdir'
 
 module NinjaDocsSpec
@@ -65,7 +65,7 @@ describe "Using ninjadocs" do
     @helper = NinjaDocsSpec::Helper.new
     @helper.clean
     @helper.deployNinjaDocs
-    system "ruby #{@helper.tmpDir}/ninjadocs.rb -q --in #{@helper.tmpDir} --out #{@helper.tmpDir}" 
+    system "ruby #{@helper.tmpDir}/ninjadocs -q --in #{@helper.tmpDir} --out #{@helper.tmpDir}" 
   end
 
   after :each do

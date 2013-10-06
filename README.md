@@ -38,4 +38,4 @@ Enjoy!
 
 ## tests
 
-To run the tests, simply run `rspec` from within the root directory.
+The default rake task is to run the tests, so simply `rake` from within the ninjadocs directory path.
