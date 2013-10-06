@@ -1,3 +1,10 @@
+require "#{File.dirname(__FILE__)}/events"
+require 'fileutils'
+require 'pathname'
+require 'rubygems'
+require 'kramdown'
+require 'haml'
+
 module NinjaDocs
 
 =begin
@@ -11,8 +18,8 @@ rendering templates using Haml.
 =end
 
   class Generator
-
-    include NinjaDocs::Colors
+    attr_accessor :events
+    attr_reader :errors
 
     FILE_EXTENSIONS = [
       'markdown',
@@ -28,35 +35,23 @@ rendering templates using Haml.
     ]
 
     def initialize opts = {}
-      
-      
-      { :root => Dir.getwd, :html => Dir.getwd, :v => false }.merge!(opts)
-      @searchRoot = File.expand_path opts[:root]
-      @htmlRoot = File.expand_path opts[:html]
+      @searchRoot = opts[:root] || Dir.getwd
+      @htmlRoot = opts[:html] || Dir.getwd
+      @events = Events.new
       @ninjaRoot = File.expand_path "#{@htmlRoot}/.ninjadocs/"
+      @indexFilepath = "#{@htmlRoot}/docs.html"
       @docs = []
       @errors = []
-      @indexFilepath = File.join @htmlRoot, 'docs.html'
-      @verbose = true
-      @colors = true
     end
 
     def generate
-      if @verbose
-        $stdout.puts '☯ NinjaDocs'
-        $stdout.puts "(working in #{@searchRoot})"
-      end
-      
+      @events.emit "start", :searchRoot => @searchRoot
+
       _purify
       _prepare
       _ninjitsu
 
-      if @errors.length > 0
-        $stdout.puts '☠ NinjaDocs ლ(ಠ益ಠლ)'
-        abort
-      else
-        $stdout.puts '✌ NinjaDocs' if @verbose
-      end
+      @events.emit "finish", :errors => @errors
     end
 
   private
@@ -96,8 +91,6 @@ rendering templates using Haml.
       end
       @docs << { :href => fout, :name => File.basename(fout, '.*').gsub("_", " "), :src => srcFile }
     rescue => exception
-      $stdout.puts "#{red('✘')} #{_relativePath(srcFile, @searchRoot)}"
-      $stderr.puts "'#{srcFile}' => #{exception.message}"
       @errors << exception
     end
 
@@ -108,14 +101,14 @@ rendering templates using Haml.
         @body = Kramdown::Document.new(doc[:body]).to_html
       end
 
-      t = File.expand_path File.join(File.dirname(__FILE__), 'templates', 'docs.haml')
+      t = File.expand_path File.join(File.dirname(__FILE__), '..', 'views', 'docs.haml')
       fout = File.expand_path doc[:href]
       File.open(fout, 'w') { |fstream| fstream.write Haml::Engine.new(IO.read(t)).render(self) }
       srcRelativePath = _relativePath(doc[:src], @searchRoot)
-      $stdout.puts "#{green('✔')} #{srcRelativePath}"
+      
+      @events.emit "success", :srcFile => doc[:src]
     rescue => exception
-      $stderr.puts "#{red('✘')} #{srcRelativePath}"
-      $stderr.puts "Render '#{srcRelativePath}' => exception: #{exception.message}"
+      @events.emit "failure", :srcFile => doc[:src], :error => exception.message
       @errors << exception
     end
   

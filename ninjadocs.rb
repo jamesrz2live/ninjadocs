@@ -1,23 +1,5 @@
 #!/usr/bin/env ruby
+require "#{File.dirname(__FILE__)}/lib/generator"
+require "#{File.dirname(__FILE__)}/lib/app"
 
-# stdlib
-require 'fileutils'
-require 'pathname'
-
-# gems
-require 'rubygems'
-require 'kramdown'
-require 'haml'
-require 'trollop'
-
-module NinjaDocs
-  
-
-
-end
-
-if __FILE__ == $0
-  require "#{File.dirname(__FILE__)}/lib/app"
-  NinjaDocs::App.new(ARGV).run
-end
-
+NinjaDocs::App.new(ARGV).run
