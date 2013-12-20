@@ -1,12 +1,17 @@
-require "#{File.dirname(__FILE__)}/events"
+$:.unshift File.dirname(__FILE__)
+require 'events'
+
+$:.unshift File.join(File.dirname(__FILE__), '..', 'views')
+require 'docs'
+
 require 'fileutils'
 require 'pathname'
+
 require 'rubygems'
 require 'kramdown'
-require 'haml'
+require 'mustache'
 
 module NinjaDocs
-
   class Generator
     attr_accessor :events
     attr_reader :errors
@@ -89,18 +94,15 @@ module NinjaDocs
       @errors << e
     end
 
-    def _setTemplateVars doc
-      src = doc[:src] ? IO.read(doc[:src]) : doc[:body]
-      @body = Kramdown::Document.new(src).to_html
-      @jsPath = "#{@ninjaRoot}/js"
-    end
-
     def _writeDoc doc
-      _setTemplateVars doc
-      
-      t = File.expand_path File.join(File.dirname(__FILE__), '..', 'views', 'docs.haml')
+      # configure mustache template for document body
+      src = doc[:src] ? IO.read(doc[:src]) : doc[:body]
+      docsView = ::Views::Docs.new
+      docsView.body = Kramdown::Document.new(src, :coderay_line_numbers => nil).to_html
+      docsView.title = 'Test Title'
+
       fout = File.expand_path doc[:href]
-      File.open(fout, 'w') { |fstream| fstream.write Haml::Engine.new(IO.read(t)).render(self) }
+      File.open(fout, 'w') { |fstream| fstream << docsView.render }
       
       @events.emit "success", :srcFile => doc[:src]
     rescue Exception => e

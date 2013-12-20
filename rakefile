@@ -1,6 +1,13 @@
+require 'rubygems'
+require 'json'
+
 module NinjaDocs
   def self.path
     File.expand_path File.dirname(__FILE__)
+  end
+
+  def self.requiredRubyGems
+    return ['kramdown', 'coderay', 'mustache']
   end
 end
 
@@ -9,6 +16,42 @@ module Shinobi
     $stdout.puts "#{command}"
     result = system command
     raise "Failed: #{command}" unless result
+  end
+
+  module TerminalColors
+    RESET_COLORS  = "\033[0m"
+    RED_TEXT      = "\033[31m"
+    GREEN_TEXT    = "\033[32m"
+    YELLOW_TEXT   = "\033[33m"
+    BLUE_TEXT     = "\033[34m"
+  end
+
+  class TextColors
+    @@enabled = true
+
+    def self.enableColors(enabled)
+      @@enabled = enabled
+    end
+
+    def self.red message
+      return TextColors::paintMessage message, TerminalColors::RED_TEXT
+    end
+
+    def self.green message
+      return TextColors::paintMessage message, TerminalColors::GREEN_TEXT
+    end
+
+    def self.blue message
+      return TextColors::paintMessage message, TerminalColors::BLUE_TEXT
+    end
+
+    def self.yellow message
+      return TextColors::paintMessage message, TerminalColors::YELLOW_TEXT
+    end
+
+    def self.paintMessage message, color
+      return @@enabled ? "#{color}#{message}#{TerminalColors::RESET_COLORS}" : message
+    end
   end
 end
 
@@ -32,4 +75,40 @@ end
 desc 'Learn how to use ninjadocs'
 task :help do
   Shinobi::doit "ruby #{NinjaDocs::path}/ninjadocs -h"
+end
+
+desc 'Install dependencies'
+task :install do
+  requirements = {}
+  
+  puts Shinobi::TextColors.blue '=== Detecting Local Ruby Gems ==='
+  NinjaDocs::requiredRubyGems.each { |requiredGem|
+      %x{gem list | grep "#{requiredGem}"}
+      requirements[requiredGem.to_s] = $?.success?
+  }
+
+  gemsToInstall = []
+  requirements.each { |gemName, isInstalledLocally|
+    if isInstalledLocally
+      puts "✓ #{gemName}"
+    else
+      puts "☐ #{gemName}"
+      gemsToInstall << gemName
+    end
+  }
+  puts "Missing #{gemsToInstall.size} required Ruby gem(s)."
+
+  unless gemsToInstall.empty?
+    puts Shinobi::TextColors.blue '=== Installing Ruby Gems ==='
+    puts Shinobi::TextColors.yellow('NOTE: You may be prompted for your system password.')
+    command = "sudo gem install --no-rdoc --no-ri #{gemsToInstall.join(' ')}"
+    system command
+    if $?.success?
+      puts Shinobi::TextColors.green 'Sweet. All required Ruby gems were installed successfully.'
+    else
+      puts Shinobi::TextColors.red 'Uh-oh. Failed to install required Ruby gems.'
+    end
+  else
+    puts Shinobi::TextColors.green 'Sweet. All required Ruby gems have already been installed.'
+  end
 end
