@@ -5,6 +5,7 @@ module Views
   class Docs < Mustache
     @body = ''
     @title = ''
-    attr_accessor :body, :title
+    @css_path = ''
+    attr_accessor :body, :title, :css_path
   end
 end

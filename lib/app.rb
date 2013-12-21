@@ -13,10 +13,13 @@ module NinjaDocs
     end
 
     def run
-      @cli[:in].each() { |dir|
+      @cli[:in].each { |dir|
         opts = { :searchRoot => dir }
         opts[:htmlRoot] = @cli[:out] if @cli[:out]
-        g = Generator.new(opts)
+        opts[:views] = @cli[:views] if @cli[:views]
+        opts[:css] = @cli[:css] if @cli[:css]
+        opts[:js] = @cli[:js] if @cli[:js]
+        g = Generator.new opts
         setEventCallbacks g.events
         g.generate
       }
@@ -27,6 +30,9 @@ module NinjaDocs
         opt :in, 'Input directory paths', :type => :strings, :multi => true, :required => true
         opt :out, 'Path where generated files should appear', :type => :string
         opt :quiet, 'No output to stdout'
+        opt :views, 'Path to views directory', :type => :string
+        opt :css, 'Path to css directory', :type => :string
+        opt :js, 'Path to javascript directory', :type => :string
         # opt :no_colors, 'Disable colors?'
       end
       

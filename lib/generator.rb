@@ -39,6 +39,10 @@ module NinjaDocs
       @indexFilepath = "#{@htmlRoot}/docs.html"
       @docs = []
       @errors = []
+      
+      @viewsRoot = opts[:views] || File.join(File.dirname(__FILE__), '..', 'views')
+      @cssRoot = opts[:css] || File.join(File.dirname(__FILE__), '..', 'css')
+      @jsRoot = opts[:js] || File.join(File.dirname(__FILE__), '..', 'js')
     end
 
     def generate
@@ -99,7 +103,8 @@ module NinjaDocs
       src = doc[:src] ? IO.read(doc[:src]) : doc[:body]
       docsView = ::Views::Docs.new
       docsView.body = Kramdown::Document.new(src, :coderay_line_numbers => nil).to_html
-      docsView.title = 'Test Title'
+      docsView.title = File.basename(doc[:src], File.extname(doc[:src])) if doc[:src]
+      docsView.css_path = @cssRoot
 
       fout = File.expand_path doc[:href]
       File.open(fout, 'w') { |fstream| fstream << docsView.render }
